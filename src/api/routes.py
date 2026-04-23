@@ -146,3 +146,39 @@ async def delete_contract(contract_id: str):
 async def health_check():
     """Health check endpoint."""
     return {"status": "healthy", "version": "1.0.0"}
+
+
+@router.post("/contracts/seed")
+async def seed_contracts():
+    """Seed database with sample contracts from contracts_data folder."""
+    from src.pipeline import ContractPipeline
+
+    contracts_dir = Path(__file__).parent.parent.parent / "contracts_data" / "dummy_contracts"
+
+    if not contracts_dir.exists():
+        raise HTTPException(404, "Sample contracts directory not found")
+
+    pipeline = ContractPipeline()
+    results = []
+    errors = []
+
+    for file_path in sorted(contracts_dir.glob("dummy-*.md")):
+        try:
+            analysis = pipeline.analyze_file(file_path)
+            results.append({
+                "file_name": file_path.name,
+                "contract_id": analysis.contract_id,
+                "risk_level": analysis.overall_risk_level.value,
+            })
+        except Exception as e:
+            errors.append({
+                "file_name": file_path.name,
+                "error": str(e),
+            })
+
+    return {
+        "seeded": len(results),
+        "failed": len(errors),
+        "results": results,
+        "errors": errors,
+    }
