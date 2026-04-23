@@ -1,4 +1,4 @@
-"""Unified extractor that combines clause extraction AND comparison in a single LLM call."""
+"""Unified extractor: Security, Royalty T&C, and Commercial Exposure analysis."""
 
 import json
 import os
@@ -11,28 +11,29 @@ from anthropic import Anthropic
 from src.schemas import ClauseExtraction, ClauseComparison, ComplianceStatus, RenewalStatus
 
 
-def _load_security_standard() -> str:
-    """Load Cisco security standard clause."""
-    standards_path = Path(__file__).parent.parent.parent / "standards" / "cisco_security_clause.md"
-    try:
-        return standards_path.read_text()
-    except FileNotFoundError:
-        return ""
+def _load_standards() -> dict[str, str]:
+    """Load all standard clause files."""
+    standards_dir = Path(__file__).parent.parent.parent / "standards"
+    standards = {}
+    for name in ["cisco_security_clause.md", "commercial_exposure.md", "royalty_terms.md"]:
+        try:
+            standards[name] = (standards_dir / name).read_text()[:2000]
+        except FileNotFoundError:
+            standards[name] = ""
+    return standards
 
 
-UNIFIED_SYSTEM_PROMPT = """You are a contract security analyst for Cisco PSIRT. Your task is to:
-1. Extract key clauses from vendor contracts
-2. Compare them against Cisco's Security Vulnerability Policy requirements
-3. Flag any security gaps or compliance issues
+UNIFIED_SYSTEM_PROMPT = """You are a contract analyst for Cisco Legal/Finance. Analyze vendor contracts for:
+1. SECURITY GAP ANALYSIS - Compare against Cisco PSIRT Security Vulnerability Policy
+2. ROYALTY T&C REVIEW - Assess royalty structure, rates, reporting, audit terms
+3. COMMERCIAL EXPOSURE - Identify financial/operational risks
 
-Be precise and thorough. Quote relevant text. Flag missing critical requirements."""
+Be thorough. Flag ALL gaps and risks. Quote relevant contract text."""
 
 
-UNIFIED_PROMPT = """Analyze this vendor contract against Cisco's Security Vulnerability Policy.
+UNIFIED_PROMPT = """Analyze this vendor contract comprehensively.
 
-## TASK 1: EXTRACT CLAUSES
-
-Extract these fields as JSON:
+## OUTPUT FORMAT (JSON)
 
 {{
   "vendor_name": "string or null",
@@ -42,114 +43,172 @@ Extract these fields as JSON:
 
   "security": {{
     "status": "compliant | needs_review | missing | not_applicable",
-    "has_security_requirements": boolean,
-    "has_incident_notification": boolean,
-    "incident_notification_timeline": "e.g., '24 hours', '72 hours', or null if not specified",
-    "has_audit_rights": boolean,
-    "has_compliance_certifications": boolean,
-    "certifications_mentioned": ["SOC2", "ISO27001", etc. or empty],
-    "has_data_protection": boolean,
-    "has_vulnerability_disclosure": boolean,
-    "has_cvss_scoring": boolean,
-    "has_secure_development": boolean,
-    "prohibits_backdoors": boolean,
-    "prohibits_hardcoded_credentials": boolean,
-    "has_third_party_component_tracking": boolean,
-    "has_security_updates_commitment": boolean,
-    "gaps": ["list ALL missing security provisions from Cisco policy"],
-    "extracted_text": "relevant security clause text"
+    "has_security_requirements": true/false,
+    "has_incident_notification": true/false,
+    "incident_notification_timeline": "24 hours, 72 hours, or null",
+    "has_audit_rights": true/false,
+    "has_compliance_certifications": true/false,
+    "certifications_mentioned": ["SOC2", "ISO27001"],
+    "has_data_protection": true/false,
+    "has_vulnerability_disclosure": true/false,
+    "has_cvss_scoring": true/false,
+    "has_secure_development": true/false,
+    "prohibits_backdoors": true/false,
+    "prohibits_hardcoded_credentials": true/false,
+    "has_third_party_component_tracking": true/false,
+    "has_security_updates_commitment": true/false,
+    "gaps": ["all security gaps"],
+    "extracted_text": "security clause text"
   }},
 
   "royalty": {{
-    "has_royalty": boolean,
+    "has_royalty": true/false,
     "royalty_type": "per-device | per-seat | percentage | minimum_commitment | flat_fee | null",
-    "royalty_amount": "description or null",
-    "payment_frequency": "quarterly | monthly | annual | one-time | null",
-    "reporting_required": boolean,
-    "extracted_text": "quoted text"
+    "royalty_amount": "USD X.XX per unit or description",
+    "royalty_base": "what the royalty is calculated on",
+    "payment_frequency": "quarterly | monthly | annual",
+    "reporting_required": true/false,
+    "reporting_frequency": "quarterly | monthly | annual",
+    "has_audit_rights": true/false,
+    "audit_notice_days": integer or null,
+    "has_true_up": true/false,
+    "has_minimum_commitment": true/false,
+    "minimum_amount": "USD amount or null",
+    "has_royalty_cap": true/false,
+    "has_volume_discounts": true/false,
+    "risks": ["royalty-related risks"],
+    "extracted_text": "royalty clause text"
+  }},
+
+  "commercial": {{
+    "has_price_cap": true/false,
+    "price_increase_limit": "X% or CPI or null",
+    "has_mfn_pricing": true/false,
+    "payment_terms": "Net-30, Net-45, etc.",
+    "has_liability_cap": true/false,
+    "liability_cap_amount": "description or null",
+    "has_indemnification": true/false,
+    "indemnification_direction": "mutual | vendor_only | cisco_only",
+    "has_termination_convenience": true/false,
+    "termination_notice_days": integer or null,
+    "has_termination_fees": true/false,
+    "termination_fee_description": "description or null",
+    "has_change_of_control": true/false,
+    "has_assignment_restriction": true/false,
+    "risks": ["commercial exposure risks"],
+    "extracted_text": "commercial terms text"
   }},
 
   "renewal": {{
-    "renewal_status": "auto_renew | manual_renewal | expired | expiring_soon | no_renewal",
-    "auto_renew": boolean,
+    "renewal_status": "auto_renew | manual_renewal | expired | no_renewal",
+    "auto_renew": true/false,
     "notice_period_days": integer or null,
     "renewal_term_months": integer or null,
     "effective_date": "YYYY-MM-DD or null",
     "expiry_date": "YYYY-MM-DD or null",
-    "extracted_text": "quoted text"
+    "extracted_text": "renewal clause text"
   }},
 
-  "comparison": {{
-    "match_status": "match | partial_match | missing | non_standard",
-    "similarity_score": 0.0-1.0,
-    "critical_gaps": ["CRITICAL missing items: backdoor prohibition, incident notification, vulnerability disclosure"],
-    "gaps": ["all missing elements vs Cisco PSIRT policy"],
-    "reasoning": "detailed explanation of compliance status"
-  }},
+  "comparisons": [
+    {{
+      "area": "security",
+      "match_status": "match | partial_match | missing | non_standard",
+      "score": 0.0-1.0,
+      "critical_gaps": ["CRITICAL missing items"],
+      "gaps": ["all gaps"],
+      "reasoning": "explanation"
+    }},
+    {{
+      "area": "royalty",
+      "match_status": "match | partial_match | missing | non_standard",
+      "score": 0.0-1.0,
+      "critical_gaps": ["CRITICAL issues"],
+      "gaps": ["all gaps"],
+      "reasoning": "explanation"
+    }},
+    {{
+      "area": "commercial",
+      "match_status": "match | partial_match | missing | non_standard",
+      "score": 0.0-1.0,
+      "critical_gaps": ["CRITICAL exposures"],
+      "gaps": ["all gaps"],
+      "reasoning": "explanation"
+    }}
+  ],
 
   "confidence": 0.0-1.0
 }}
 
-## CISCO SECURITY VULNERABILITY POLICY REQUIREMENTS
+## ANALYSIS REQUIREMENTS
 
-Key requirements vendors MUST meet:
+### 1. SECURITY GAP ANALYSIS (Cisco PSIRT Policy)
+CRITICAL (Red if missing):
+- NO backdoors, hardcoded credentials, covert channels
+- Security incident notification (24-72 hours)
+- Vulnerability disclosure process (ISO 29147)
+- CVSS scoring for vulnerabilities
 
-**CRITICAL (Red flags if missing):**
-1. NO backdoors, hardcoded credentials, covert channels, undocumented access
-2. Security incident notification within 24-72 hours
-3. Vulnerability disclosure process (ISO/IEC 29147:2018)
-4. CVSS v3.1 scoring for vulnerabilities
-5. CVE assignment for confirmed vulnerabilities
+REQUIRED:
+- 24/7 security contact
+- SOC 2 / ISO 27001 certification
+- Data encryption
+- Third-party component tracking
+- Security update commitments
 
-**REQUIRED:**
-6. 24/7 security incident contact
-7. Encrypted communication support (PGP/GPG)
-8. Confidential handling of vulnerability reports
-9. Coordinated disclosure timeline
-10. SOC 2 Type II or equivalent certification
-11. Annual security audit reports
-12. Data encryption at rest and in transit
-13. Access controls and authentication
-14. Third-party component vulnerability tracking
-15. Security software updates from FCS to LDoS
-16. Free updates for Critical/High severity issues
+### 2. ROYALTY T&C REVIEW
+Check for:
+- Clear royalty calculation method
+- Market-competitive rates
+- Reasonable reporting frequency (quarterly max)
+- Fair audit terms (30+ days notice, independent auditor)
+- True-up provisions
+- Royalty caps
+- Volume discounts
 
-**CLOUD SERVICES (if applicable):**
-17. Regular patching and monitoring
-18. Customer notification for security issues
-19. Timely patch deployment
+RED FLAGS:
+- Ambiguous calculation
+- Excessive rates
+- Punitive audit rights
+- No caps or minimums protections
 
-{cisco_standard}
+### 3. COMMERCIAL EXPOSURE
+Check for:
+- Price increase caps (3-5% or CPI)
+- Liability caps (mutual)
+- Termination for convenience
+- Assignment restrictions
+- Change of control protections
+- Reasonable payment terms (Net-30+)
+
+RED FLAGS:
+- Unlimited liability
+- No price protections
+- One-sided indemnification
+- Termination traps
+- Auto-renewal at higher rates
 
 ## CONTRACT TO ANALYZE
 
 {contract_text}
 
-Return ONLY valid JSON. Be thorough in identifying gaps."""
+Return ONLY valid JSON."""
 
 
 class UnifiedExtractor:
-    """Single-call extractor that performs extraction + comparison together."""
+    """Extracts security, royalty, and commercial terms in one LLM call."""
 
     def __init__(self, api_key: Optional[str] = None, model: str = "claude-sonnet-4-20250514"):
         self.client = Anthropic(api_key=api_key or os.getenv("ANTHROPIC_API_KEY"))
         self.model = model
-        self.security_standard = _load_security_standard()
+        self.standards = _load_standards()
 
     def extract_and_compare(
         self,
         contract_text: str,
         file_name: str = ""
     ) -> tuple[ClauseExtraction, list[ClauseComparison], dict]:
-        """Extract clauses AND compare against standards in one LLM call.
-
-        Returns:
-            Tuple of (ClauseExtraction, list[ClauseComparison], metadata dict)
-        """
-        prompt = UNIFIED_PROMPT.format(
-            cisco_standard=self.security_standard[:3000],
-            contract_text=contract_text[:45000],
-        )
+        """Extract all clauses and compare against standards."""
+        prompt = UNIFIED_PROMPT.format(contract_text=contract_text[:45000])
 
         response = self.client.messages.create(
             model=self.model,
@@ -202,6 +261,9 @@ class UnifiedExtractor:
         from src.schemas.contract import SecurityClause, RoyaltyTerms, RenewalTerms
 
         security_data = data.get("security", {})
+        comparisons_data = data.get("comparisons", [])
+        security_comparison = next((c for c in comparisons_data if c.get("area") == "security"), {})
+
         security = SecurityClause(
             status=ComplianceStatus(security_data.get("status", "needs_review")),
             has_security_requirements=security_data.get("has_security_requirements", False),
@@ -219,7 +281,7 @@ class UnifiedExtractor:
             has_third_party_component_tracking=security_data.get("has_third_party_component_tracking", False),
             has_security_updates_commitment=security_data.get("has_security_updates_commitment", False),
             gaps=security_data.get("gaps", []),
-            critical_gaps=security_data.get("critical_gaps", []) if "critical_gaps" in security_data else data.get("comparison", {}).get("critical_gaps", []),
+            critical_gaps=security_comparison.get("critical_gaps", []),
             extracted_text=security_data.get("extracted_text"),
         )
 
@@ -253,15 +315,16 @@ class UnifiedExtractor:
 
     def _build_comparisons(self, data: dict) -> list[ClauseComparison]:
         """Build comparison results from parsed data."""
-        comp_data = data.get("comparison", {})
+        comparisons_data = data.get("comparisons", [])
+        results = []
 
-        if not comp_data:
-            return []
+        for comp in comparisons_data:
+            results.append(ClauseComparison(
+                clause_type=comp.get("area", "unknown"),
+                match_status=comp.get("match_status", "needs_review"),
+                similarity_score=comp.get("score", 0.5),
+                gaps=comp.get("gaps", []) + comp.get("critical_gaps", []),
+                reasoning=comp.get("reasoning", ""),
+            ))
 
-        return [ClauseComparison(
-            clause_type="security",
-            match_status=comp_data.get("match_status", "needs_review"),
-            similarity_score=comp_data.get("similarity_score", 0.5),
-            gaps=comp_data.get("gaps", []),
-            reasoning=comp_data.get("reasoning", ""),
-        )]
+        return results
