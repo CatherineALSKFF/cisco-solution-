@@ -135,7 +135,7 @@ export default function Dashboard() {
         {/* Top Nav */}
         <header className="h-14 bg-[var(--bg-surface)] border-b border-[var(--border)] px-6 flex items-center justify-between shadow-[var(--shadow-xs)]">
           <div className="flex items-center gap-2">
-            <span className="text-sm text-[var(--text-muted)]">Cisco CDP</span>
+            <span className="text-sm text-[var(--text-muted)]">CES</span>
             <span className="text-[var(--text-faint)]">›</span>
             <span className="text-sm font-medium text-[var(--text-primary)]">
               {activeView === "dashboard" ? "Dashboard" :
@@ -175,7 +175,7 @@ export default function Dashboard() {
               {/* Header */}
               <div className="mb-8">
                 <h1 className="text-2xl font-semibold text-[var(--text-primary)] mb-1.5 tracking-tight">Contract Intelligence</h1>
-                <p className="text-[var(--text-muted)]">Cisco CDP Analysis Dashboard</p>
+                <p className="text-[var(--text-muted)]">CES Analysis Dashboard</p>
               </div>
 
               {/* Dashboard Cards */}

@@ -67,12 +67,12 @@ export function Sidebar({ activeView, onViewChange, stats }: SidebarProps) {
     >
       {/* Logo */}
       <div className="h-14 px-4 flex items-center gap-3 border-b border-white/10">
-        <div className="w-8 h-8 rounded-lg bg-[#EF4444] flex items-center justify-center text-white text-xs font-bold">
-          CD
+        <div className="w-8 h-8 rounded-lg bg-gradient-to-br from-emerald-500 via-amber-500 to-red-500 flex items-center justify-center text-white text-[10px] font-bold tracking-tight">
+          CES
         </div>
         <div>
-          <p className="text-white text-sm font-semibold leading-none">Cisco CDP</p>
-          <p className="text-white/50 text-[10px] leading-none mt-0.5">Legal Ops Workspace</p>
+          <p className="text-white text-sm font-semibold leading-none">CES</p>
+          <p className="text-white/50 text-[10px] leading-none mt-0.5">Contract Evaluation System</p>
         </div>
       </div>
 
