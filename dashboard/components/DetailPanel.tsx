@@ -1,9 +1,37 @@
 "use client";
 
+import { useState } from "react";
 import { motion, AnimatePresence } from "framer-motion";
-import { Contract } from "@/lib/types";
+import { Contract, RiskFlag } from "@/lib/types";
 import { RiskBadge } from "./RiskBadge";
 import { formatDate } from "@/lib/utils";
+
+const recommendationDetails: Record<string, { explanation: string; action: string }> = {
+  "Add Cisco standard security clause": {
+    explanation: "This contract lacks Cisco's standard security requirements language. Without this clause, the vendor may not be held to Cisco's security standards, creating potential liability and compliance gaps.",
+    action: "Request vendor to sign Cisco Security Addendum (CSA-2024) or incorporate standard security language into contract amendment.",
+  },
+  "Add security incident notification clause (24-72 hour requirement)": {
+    explanation: "Per Cisco PSIRT policy, vendors must notify Cisco of security incidents within 24-72 hours. This contract does not contain such a requirement, which could delay incident response.",
+    action: "Add clause requiring vendor notification within 24 hours for critical incidents, 72 hours for standard incidents. Use template from Legal Ops playbook.",
+  },
+  "Add vulnerability disclosure requirements": {
+    explanation: "Contract lacks terms requiring the vendor to disclose known vulnerabilities in their software. This is a critical gap for supply chain security.",
+    action: "Include coordinated vulnerability disclosure (CVD) requirements per Cisco's vendor security standards.",
+  },
+  "Add audit rights for security compliance": {
+    explanation: "Without audit rights, Cisco cannot verify vendor compliance with security requirements. This limits visibility into potential risks.",
+    action: "Add right-to-audit clause with 30-day notice period for security compliance verification.",
+  },
+  "Review royalty calculation methodology": {
+    explanation: "The royalty terms in this contract may require detailed tracking and reporting. Ensure finance team has visibility into calculation requirements.",
+    action: "Schedule review with Finance to confirm royalty tracking systems are configured correctly.",
+  },
+  "Verify compliance certifications are current": {
+    explanation: "Contract references compliance certifications (SOC 2, ISO 27001, etc.) that may have expired or need renewal verification.",
+    action: "Request current certification documentation from vendor and set calendar reminder for annual re-verification.",
+  },
+};
 
 interface DetailPanelProps {
   contract: Contract | null;
@@ -106,9 +134,7 @@ export function DetailPanel({ contract, onClose }: DetailPanelProps) {
                           {flag.description}
                         </p>
                         {flag.recommendation && (
-                          <p className="text-xs text-[var(--accent)] mt-2">
-                            → {flag.recommendation}
-                          </p>
+                          <RecommendationLink recommendation={flag.recommendation} />
                         )}
                       </div>
                     ))}
@@ -315,5 +341,68 @@ function Chip({ active, label }: { active: boolean; label: string }) {
     >
       {active ? "✓" : "✗"} {label}
     </span>
+  );
+}
+
+function RecommendationLink({ recommendation }: { recommendation: string }) {
+  const [isOpen, setIsOpen] = useState(false);
+
+  const details = recommendationDetails[recommendation] || {
+    explanation: "This recommendation addresses a potential gap identified in the contract analysis.",
+    action: "Review the contract terms and consult with Legal Ops for specific remediation steps.",
+  };
+
+  return (
+    <div className="mt-2">
+      <button
+        onClick={() => setIsOpen(!isOpen)}
+        className="group flex items-center gap-1.5 text-xs text-[var(--accent)] hover:text-[var(--accent)]/80 transition-colors cursor-pointer"
+      >
+        <span className="group-hover:translate-x-0.5 transition-transform">→</span>
+        <span className="underline underline-offset-2 decoration-[var(--accent)]/30 group-hover:decoration-[var(--accent)]/60">
+          {recommendation}
+        </span>
+        <svg
+          className={`w-3 h-3 transition-transform ${isOpen ? 'rotate-180' : ''}`}
+          fill="none"
+          viewBox="0 0 24 24"
+          stroke="currentColor"
+          strokeWidth={2}
+        >
+          <path strokeLinecap="round" strokeLinejoin="round" d="M19 9l-7 7-7-7" />
+        </svg>
+      </button>
+
+      <AnimatePresence>
+        {isOpen && (
+          <motion.div
+            initial={{ height: 0, opacity: 0 }}
+            animate={{ height: "auto", opacity: 1 }}
+            exit={{ height: 0, opacity: 0 }}
+            transition={{ duration: 0.2 }}
+            className="overflow-hidden"
+          >
+            <div className="mt-3 p-3 rounded-lg bg-[var(--accent-soft)] border border-[var(--accent)]/20">
+              <div className="mb-3">
+                <p className="text-[10px] font-semibold text-[var(--accent)] uppercase tracking-wider mb-1">
+                  Why this matters
+                </p>
+                <p className="text-xs text-[var(--text-secondary)] leading-relaxed">
+                  {details.explanation}
+                </p>
+              </div>
+              <div>
+                <p className="text-[10px] font-semibold text-[var(--accent)] uppercase tracking-wider mb-1">
+                  Recommended action
+                </p>
+                <p className="text-xs text-[var(--text-secondary)] leading-relaxed">
+                  {details.action}
+                </p>
+              </div>
+            </div>
+          </motion.div>
+        )}
+      </AnimatePresence>
+    </div>
   );
 }
