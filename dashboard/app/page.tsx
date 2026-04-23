@@ -119,15 +119,6 @@ export default function Dashboard() {
     );
   }
 
-  const tabs = [
-    { id: "dashboard", label: "Dashboard" },
-    { id: "contracts", label: "Contracts" },
-    { id: "risks", label: "Risk Center" },
-    { id: "renewals", label: "Renewals" },
-    { id: "vendors", label: "Vendors" },
-    { id: "reports", label: "Reports" },
-  ];
-
   return (
     <div className="min-h-screen bg-[#fafafa] flex">
       <Sidebar
@@ -146,23 +137,15 @@ export default function Dashboard() {
           <div className="flex items-center gap-1">
             <span className="text-sm text-gray-400">Cisco CDP</span>
             <span className="text-gray-300 mx-2">›</span>
-            <span className="text-sm font-medium text-gray-900">Risk Center</span>
+            <span className="text-sm font-medium text-gray-900">
+              {activeView === "dashboard" ? "Dashboard" :
+               activeView === "risks" ? "Risk Center" :
+               activeView === "contracts" ? "Contracts" :
+               activeView === "renewals" ? "Renewals" :
+               activeView === "upload" ? "Upload" :
+               "Dashboard"}
+            </span>
           </div>
-          <nav className="flex items-center gap-1 absolute left-1/2 -translate-x-1/2">
-            {tabs.map((tab) => (
-              <button
-                key={tab.id}
-                onClick={() => handleViewChange(tab.id)}
-                className={`px-3 py-1.5 text-sm font-medium rounded transition-colors ${
-                  activeView === tab.id
-                    ? "text-gray-900 bg-gray-100"
-                    : "text-gray-500 hover:text-gray-700"
-                }`}
-              >
-                {tab.label}
-              </button>
-            ))}
-          </nav>
           <div className="flex items-center gap-4">
             <div className="flex items-center gap-2 px-3 py-1.5 bg-gray-100 rounded-lg text-sm text-gray-500">
               <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={1.5}>
