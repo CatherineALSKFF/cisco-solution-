@@ -1,17 +1,25 @@
 <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 32 32" fill="none">
-  <!-- Background with subtle gradient -->
-  <rect width="32" height="32" rx="7" fill="#0F172A"/>
+  <!-- Dark rounded square -->
+  <rect width="32" height="32" rx="8" fill="#0A0A0B"/>
 
-  <!-- Abstract document/contract shape -->
-  <path d="M9 7h10l4 4v14a2 2 0 01-2 2H9a2 2 0 01-2V9a2 2 0 012-2z" fill="#1E293B" stroke="#334155" stroke-width="0.5"/>
-  <path d="M19 7v4h4" fill="#1E293B" stroke="#334155" stroke-width="0.5"/>
+  <!-- Bold C shape with cut -->
+  <path d="M16 6C10.477 6 6 10.477 6 16s4.477 10 10 10c2.38 0 4.567-.833 6.285-2.222"
+        stroke="url(#logoGrad)"
+        stroke-width="4"
+        stroke-linecap="round"
+        fill="none"/>
 
-  <!-- Scanning/analysis lines with risk gradient -->
-  <line x1="10" y1="13" x2="18" y2="13" stroke="#10B981" stroke-width="1.5" stroke-linecap="round" opacity="0.9"/>
-  <line x1="10" y1="16.5" x2="20" y2="16.5" stroke="#F59E0B" stroke-width="1.5" stroke-linecap="round" opacity="0.9"/>
-  <line x1="10" y1="20" x2="15" y2="20" stroke="#EF4444" stroke-width="1.5" stroke-linecap="round" opacity="0.9"/>
+  <!-- Evaluation tick integrated -->
+  <path d="M20 14l3 3 5-6"
+        stroke="#10B981"
+        stroke-width="2.5"
+        stroke-linecap="round"
+        stroke-linejoin="round"/>
 
-  <!-- Evaluation checkmark/pulse indicator -->
-  <circle cx="24" cy="8" r="5" fill="#0F172A" stroke="#10B981" stroke-width="1.5"/>
-  <path d="M22 8l1.5 1.5 3-3" stroke="#10B981" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/>
+  <defs>
+    <linearGradient id="logoGrad" x1="6" y1="6" x2="22" y2="26" gradientUnits="userSpaceOnUse">
+      <stop offset="0%" stop-color="#6366F1"/>
+      <stop offset="100%" stop-color="#8B5CF6"/>
+    </linearGradient>
+  </defs>
 </svg>

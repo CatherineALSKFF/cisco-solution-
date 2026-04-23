@@ -67,12 +67,23 @@ export function Sidebar({ activeView, onViewChange, stats }: SidebarProps) {
     >
       {/* Logo */}
       <div className="h-14 px-4 flex items-center gap-3 border-b border-white/10">
-        <div className="w-8 h-8 rounded-lg bg-gradient-to-br from-emerald-500 via-amber-500 to-red-500 flex items-center justify-center text-white text-[10px] font-bold tracking-tight">
-          CES
+        <div className="w-8 h-8 rounded-lg bg-gradient-to-br from-indigo-500 to-violet-500 flex items-center justify-center">
+          <svg width="18" height="18" viewBox="0 0 24 24" fill="none">
+            <path d="M12 3C7.03 3 3 7.03 3 12s4.03 9 9 9c2.14 0 4.1-.75 5.65-2"
+                  stroke="white"
+                  strokeWidth="2.5"
+                  strokeLinecap="round"
+                  fill="none"/>
+            <path d="M15 11l2.5 2.5L22 9"
+                  stroke="#4ADE80"
+                  strokeWidth="2"
+                  strokeLinecap="round"
+                  strokeLinejoin="round"/>
+          </svg>
         </div>
         <div>
-          <p className="text-white text-sm font-semibold leading-none">CES</p>
-          <p className="text-white/50 text-[10px] leading-none mt-0.5">Contract Evaluation System</p>
+          <p className="text-white text-sm font-semibold leading-none tracking-tight">CES</p>
+          <p className="text-white/40 text-[10px] leading-none mt-0.5">Contract Evaluation</p>
         </div>
       </div>
 
