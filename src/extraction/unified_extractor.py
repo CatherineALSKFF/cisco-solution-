@@ -6,7 +6,7 @@ from datetime import date
 from pathlib import Path
 from typing import Optional
 
-from anthropic import Anthropic
+from openai import OpenAI
 
 from src.schemas import ClauseExtraction, ClauseComparison, ComplianceStatus, RenewalStatus
 
@@ -197,8 +197,8 @@ Return ONLY valid JSON."""
 class UnifiedExtractor:
     """Extracts security, royalty, and commercial terms in one LLM call."""
 
-    def __init__(self, api_key: Optional[str] = None, model: str = "claude-sonnet-4-20250514"):
-        self.client = Anthropic(api_key=api_key or os.getenv("ANTHROPIC_API_KEY"))
+    def __init__(self, api_key: Optional[str] = None, model: str = "gpt-4o"):
+        self.client = OpenAI(api_key=api_key or os.getenv("OPENAI_API_KEY"))
         self.model = model
         self.standards = _load_standards()
 
@@ -210,14 +210,16 @@ class UnifiedExtractor:
         """Extract all clauses and compare against standards."""
         prompt = UNIFIED_PROMPT.format(contract_text=contract_text[:45000])
 
-        response = self.client.messages.create(
+        response = self.client.chat.completions.create(
             model=self.model,
             max_tokens=4096,
-            system=UNIFIED_SYSTEM_PROMPT,
-            messages=[{"role": "user", "content": prompt}],
+            messages=[
+                {"role": "system", "content": UNIFIED_SYSTEM_PROMPT},
+                {"role": "user", "content": prompt},
+            ],
         )
 
-        data = self._parse_json_response(response.content[0].text)
+        data = self._parse_json_response(response.choices[0].message.content)
 
         clauses = self._build_clause_extraction(data)
         comparisons = self._build_comparisons(data)

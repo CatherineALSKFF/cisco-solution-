@@ -1,6 +1,7 @@
 "use client";
 
 import { motion } from "framer-motion";
+import { UserButton, useUser } from "@clerk/nextjs";
 
 interface SidebarProps {
   activeView: string;
@@ -10,6 +11,46 @@ interface SidebarProps {
     high: number;
     renewals: number;
   };
+}
+
+function UserSection() {
+  const { user, isLoaded } = useUser();
+
+  if (!isLoaded) {
+    return (
+      <div className="p-4 border-t border-white/10">
+        <div className="flex items-center gap-3">
+          <div className="w-8 h-8 rounded-full bg-white/10 animate-pulse" />
+          <div className="flex-1">
+            <div className="h-3 bg-white/10 rounded animate-pulse w-20" />
+            <div className="h-2 bg-white/10 rounded animate-pulse w-16 mt-1" />
+          </div>
+        </div>
+      </div>
+    );
+  }
+
+  return (
+    <div className="p-4 border-t border-white/10">
+      <div className="flex items-center gap-3">
+        <UserButton
+          appearance={{
+            elements: {
+              avatarBox: "w-8 h-8",
+            },
+          }}
+        />
+        <div className="flex-1 min-w-0">
+          <p className="text-white text-[13px] font-medium truncate leading-none">
+            {user?.firstName || user?.emailAddresses[0]?.emailAddress?.split("@")[0] || "User"}
+          </p>
+          <p className="text-white/40 text-[11px] truncate leading-none mt-0.5">
+            {user?.emailAddresses[0]?.emailAddress || "Legal Ops"}
+          </p>
+        </div>
+      </div>
+    </div>
+  );
 }
 
 export function Sidebar({ activeView, onViewChange, stats }: SidebarProps) {
@@ -124,22 +165,7 @@ export function Sidebar({ activeView, onViewChange, stats }: SidebarProps) {
       </nav>
 
       {/* User */}
-      <div className="p-4 border-t border-white/10">
-        <div className="flex items-center gap-3">
-          <div className="w-8 h-8 rounded-full bg-gradient-to-br from-emerald-400 to-cyan-500 flex items-center justify-center text-white text-xs font-bold">
-            JM
-          </div>
-          <div className="flex-1 min-w-0">
-            <p className="text-white text-[13px] font-medium truncate leading-none">Jordan Mercer</p>
-            <p className="text-white/40 text-[11px] truncate leading-none mt-0.5">Admin · Legal Ops</p>
-          </div>
-          <button className="text-white/40 hover:text-white/60 transition-colors">
-            <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={1.5}>
-              <path strokeLinecap="round" strokeLinejoin="round" d="M15.75 9V5.25A2.25 2.25 0 0013.5 3h-6a2.25 2.25 0 00-2.25 2.25v13.5A2.25 2.25 0 007.5 21h6a2.25 2.25 0 002.25-2.25V15m3 0l3-3m0 0l-3-3m3 3H9" />
-            </svg>
-          </button>
-        </div>
-      </div>
+      <UserSection />
     </motion.aside>
   );
 }
