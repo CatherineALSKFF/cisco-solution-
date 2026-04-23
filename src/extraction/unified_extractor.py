@@ -20,15 +20,15 @@ def _load_security_standard() -> str:
         return ""
 
 
-UNIFIED_SYSTEM_PROMPT = """You are a contract analysis expert for Cisco. Your task is to:
-1. Extract key clauses from contracts
-2. Compare them against Cisco's security standards
-3. Provide structured analysis in a single pass
+UNIFIED_SYSTEM_PROMPT = """You are a contract security analyst for Cisco PSIRT. Your task is to:
+1. Extract key clauses from vendor contracts
+2. Compare them against Cisco's Security Vulnerability Policy requirements
+3. Flag any security gaps or compliance issues
 
-Be precise. Quote relevant text. Acknowledge uncertainty."""
+Be precise and thorough. Quote relevant text. Flag missing critical requirements."""
 
 
-UNIFIED_PROMPT = """Analyze this contract and perform BOTH extraction AND comparison in one response.
+UNIFIED_PROMPT = """Analyze this vendor contract against Cisco's Security Vulnerability Policy.
 
 ## TASK 1: EXTRACT CLAUSES
 
@@ -44,11 +44,20 @@ Extract these fields as JSON:
     "status": "compliant | needs_review | missing | not_applicable",
     "has_security_requirements": boolean,
     "has_incident_notification": boolean,
+    "incident_notification_timeline": "e.g., '24 hours', '72 hours', or null if not specified",
     "has_audit_rights": boolean,
     "has_compliance_certifications": boolean,
+    "certifications_mentioned": ["SOC2", "ISO27001", etc. or empty],
     "has_data_protection": boolean,
-    "gaps": ["missing provisions"],
-    "extracted_text": "quoted text"
+    "has_vulnerability_disclosure": boolean,
+    "has_cvss_scoring": boolean,
+    "has_secure_development": boolean,
+    "prohibits_backdoors": boolean,
+    "prohibits_hardcoded_credentials": boolean,
+    "has_third_party_component_tracking": boolean,
+    "has_security_updates_commitment": boolean,
+    "gaps": ["list ALL missing security provisions from Cisco policy"],
+    "extracted_text": "relevant security clause text"
   }},
 
   "royalty": {{
@@ -73,14 +82,42 @@ Extract these fields as JSON:
   "comparison": {{
     "match_status": "match | partial_match | missing | non_standard",
     "similarity_score": 0.0-1.0,
-    "gaps": ["specific missing elements vs Cisco standard"],
-    "reasoning": "explanation"
+    "critical_gaps": ["CRITICAL missing items: backdoor prohibition, incident notification, vulnerability disclosure"],
+    "gaps": ["all missing elements vs Cisco PSIRT policy"],
+    "reasoning": "detailed explanation of compliance status"
   }},
 
   "confidence": 0.0-1.0
 }}
 
-## TASK 2: COMPARE AGAINST CISCO SECURITY STANDARD
+## CISCO SECURITY VULNERABILITY POLICY REQUIREMENTS
+
+Key requirements vendors MUST meet:
+
+**CRITICAL (Red flags if missing):**
+1. NO backdoors, hardcoded credentials, covert channels, undocumented access
+2. Security incident notification within 24-72 hours
+3. Vulnerability disclosure process (ISO/IEC 29147:2018)
+4. CVSS v3.1 scoring for vulnerabilities
+5. CVE assignment for confirmed vulnerabilities
+
+**REQUIRED:**
+6. 24/7 security incident contact
+7. Encrypted communication support (PGP/GPG)
+8. Confidential handling of vulnerability reports
+9. Coordinated disclosure timeline
+10. SOC 2 Type II or equivalent certification
+11. Annual security audit reports
+12. Data encryption at rest and in transit
+13. Access controls and authentication
+14. Third-party component vulnerability tracking
+15. Security software updates from FCS to LDoS
+16. Free updates for Critical/High severity issues
+
+**CLOUD SERVICES (if applicable):**
+17. Regular patching and monitoring
+18. Customer notification for security issues
+19. Timely patch deployment
 
 {cisco_standard}
 
@@ -88,7 +125,7 @@ Extract these fields as JSON:
 
 {contract_text}
 
-Return ONLY valid JSON."""
+Return ONLY valid JSON. Be thorough in identifying gaps."""
 
 
 class UnifiedExtractor:
@@ -169,10 +206,20 @@ class UnifiedExtractor:
             status=ComplianceStatus(security_data.get("status", "needs_review")),
             has_security_requirements=security_data.get("has_security_requirements", False),
             has_incident_notification=security_data.get("has_incident_notification", False),
+            incident_notification_timeline=security_data.get("incident_notification_timeline"),
             has_audit_rights=security_data.get("has_audit_rights", False),
             has_compliance_certifications=security_data.get("has_compliance_certifications", False),
+            certifications_mentioned=security_data.get("certifications_mentioned", []),
             has_data_protection=security_data.get("has_data_protection", False),
+            has_vulnerability_disclosure=security_data.get("has_vulnerability_disclosure", False),
+            has_cvss_scoring=security_data.get("has_cvss_scoring", False),
+            has_secure_development=security_data.get("has_secure_development", False),
+            prohibits_backdoors=security_data.get("prohibits_backdoors", False),
+            prohibits_hardcoded_credentials=security_data.get("prohibits_hardcoded_credentials", False),
+            has_third_party_component_tracking=security_data.get("has_third_party_component_tracking", False),
+            has_security_updates_commitment=security_data.get("has_security_updates_commitment", False),
             gaps=security_data.get("gaps", []),
+            critical_gaps=security_data.get("critical_gaps", []) if "critical_gaps" in security_data else data.get("comparison", {}).get("critical_gaps", []),
             extracted_text=security_data.get("extracted_text"),
         )
 

@@ -49,10 +49,20 @@ class SecurityClause(BaseModel):
     status: ComplianceStatus
     has_security_requirements: bool = Field(description="Whether contract includes security requirements")
     has_incident_notification: bool = Field(False, description="Requires notification of security incidents")
+    incident_notification_timeline: Optional[str] = Field(None, description="Timeline for notification, e.g., '24 hours'")
     has_audit_rights: bool = Field(False, description="Cisco has audit rights")
     has_compliance_certifications: bool = Field(False, description="Requires SOC2, ISO27001, etc.")
+    certifications_mentioned: list[str] = Field(default_factory=list, description="List of certifications mentioned")
     has_data_protection: bool = Field(False, description="Includes data protection/privacy terms")
+    has_vulnerability_disclosure: bool = Field(False, description="Has vulnerability disclosure process")
+    has_cvss_scoring: bool = Field(False, description="Uses CVSS scoring for vulnerabilities")
+    has_secure_development: bool = Field(False, description="Requires secure development practices")
+    prohibits_backdoors: bool = Field(False, description="Explicitly prohibits backdoors/undocumented access")
+    prohibits_hardcoded_credentials: bool = Field(False, description="Prohibits hardcoded credentials")
+    has_third_party_component_tracking: bool = Field(False, description="Tracks third-party component vulnerabilities")
+    has_security_updates_commitment: bool = Field(False, description="Commits to security updates")
     gaps: list[str] = Field(default_factory=list, description="Missing or weak security provisions")
+    critical_gaps: list[str] = Field(default_factory=list, description="Critical missing provisions (PSIRT policy)")
     extracted_text: Optional[str] = Field(None, description="Relevant text from contract")
 
 

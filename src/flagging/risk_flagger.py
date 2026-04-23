@@ -36,7 +36,7 @@ class RiskFlagger:
         return flags, overall_level
 
     def _check_security_risks(self, clauses: ClauseExtraction) -> list[RiskFlag]:
-        """Check for security-related risks."""
+        """Check for security-related risks based on Cisco PSIRT policy."""
         flags = []
         security = clauses.security
 
@@ -57,23 +57,96 @@ class RiskFlagger:
                 recommendation="Review and strengthen security provisions.",
             ))
 
+        if not security.prohibits_backdoors:
+            flags.append(RiskFlag(
+                level=RiskLevel.RED,
+                category="security",
+                title="No Backdoor Prohibition",
+                description="Contract does not explicitly prohibit backdoors, undocumented access, or covert channels.",
+                recommendation="CRITICAL: Add clause prohibiting backdoors per Cisco PSIRT policy.",
+            ))
+
+        if not security.prohibits_hardcoded_credentials:
+            flags.append(RiskFlag(
+                level=RiskLevel.RED,
+                category="security",
+                title="No Hardcoded Credentials Prohibition",
+                description="Contract does not prohibit hardcoded or undocumented account credentials.",
+                recommendation="CRITICAL: Add clause prohibiting hardcoded credentials per Cisco PSIRT policy.",
+            ))
+
         if not security.has_incident_notification:
             flags.append(RiskFlag(
-                level=RiskLevel.YELLOW,
+                level=RiskLevel.RED,
                 category="security",
                 title="No Incident Notification Requirement",
                 description="Contract does not require vendor to notify Cisco of security incidents.",
-                recommendation="Add security incident notification clause (24-72 hour requirement).",
+                recommendation="CRITICAL: Add 24-72 hour incident notification requirement per Cisco PSIRT policy.",
             ))
 
-        if not security.has_data_protection and security.has_security_requirements:
+        if not security.has_vulnerability_disclosure:
+            flags.append(RiskFlag(
+                level=RiskLevel.RED,
+                category="security",
+                title="No Vulnerability Disclosure Process",
+                description="Contract lacks vulnerability disclosure process (ISO/IEC 29147:2018).",
+                recommendation="CRITICAL: Add vulnerability disclosure requirements per Cisco PSIRT policy.",
+            ))
+
+        if not security.has_data_protection:
             flags.append(RiskFlag(
                 level=RiskLevel.YELLOW,
                 category="security",
                 title="Missing Data Protection Terms",
-                description="Security provisions exist but no explicit data protection/privacy terms.",
-                recommendation="Add data protection addendum.",
+                description="No explicit data protection/privacy terms (encryption, access controls).",
+                recommendation="Add data protection addendum with encryption requirements.",
             ))
+
+        if not security.has_audit_rights:
+            flags.append(RiskFlag(
+                level=RiskLevel.YELLOW,
+                category="security",
+                title="No Audit Rights",
+                description="Cisco does not have security audit rights over vendor.",
+                recommendation="Add annual security audit rights clause.",
+            ))
+
+        if not security.has_compliance_certifications:
+            flags.append(RiskFlag(
+                level=RiskLevel.YELLOW,
+                category="security",
+                title="No Compliance Certifications Required",
+                description="Contract does not require SOC 2, ISO 27001, or equivalent certifications.",
+                recommendation="Add requirement for annual SOC 2 Type II or equivalent.",
+            ))
+
+        if not security.has_security_updates_commitment:
+            flags.append(RiskFlag(
+                level=RiskLevel.YELLOW,
+                category="security",
+                title="No Security Updates Commitment",
+                description="Vendor has not committed to providing security updates.",
+                recommendation="Add security update commitment through product lifecycle.",
+            ))
+
+        if not security.has_third_party_component_tracking:
+            flags.append(RiskFlag(
+                level=RiskLevel.YELLOW,
+                category="security",
+                title="No Third-Party Component Tracking",
+                description="Contract does not require tracking of third-party component vulnerabilities.",
+                recommendation="Add SBOM and third-party vulnerability tracking requirements.",
+            ))
+
+        if security.critical_gaps:
+            for gap in security.critical_gaps[:3]:
+                flags.append(RiskFlag(
+                    level=RiskLevel.RED,
+                    category="security",
+                    title="Critical PSIRT Policy Gap",
+                    description=gap,
+                    recommendation="Address immediately per Cisco Security Vulnerability Policy.",
+                ))
 
         return flags
 
