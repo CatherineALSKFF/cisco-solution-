@@ -63,7 +63,7 @@ export function Sidebar({ activeView, onViewChange, stats }: SidebarProps) {
     <motion.aside
       initial={{ x: -10, opacity: 0 }}
       animate={{ x: 0, opacity: 1 }}
-      className="w-56 h-screen bg-[var(--sidebar-bg)] flex flex-col fixed left-0 top-0 z-30"
+      className="w-56 h-screen bg-[#16181D] flex flex-col fixed left-0 top-0 z-30"
     >
       {/* Logo */}
       <div className="h-14 px-4 flex items-center gap-3 border-b border-white/10">
