@@ -7,7 +7,7 @@ import { fetchContracts, fetchSummary, uploadContract } from "@/lib/api";
 import { Sidebar } from "@/components/Sidebar";
 import { SummaryBar } from "@/components/SummaryBar";
 import { ContractsTable } from "@/components/ContractsTable";
-import { ContractDetail } from "@/components/ContractDetail";
+import { DetailPanel } from "@/components/DetailPanel";
 import { UploadZone } from "@/components/UploadZone";
 import { RiskChart } from "@/components/RiskChart";
 
@@ -151,16 +151,14 @@ export default function Dashboard() {
           <div className="flex items-center justify-between">
             <div>
               <h2 className="text-lg font-semibold text-[var(--text-primary)]">
-                {selectedContract ? selectedContract.vendor_name || "Contract Details" :
-                  activeView === "dashboard" ? "Overview" :
+                {activeView === "dashboard" ? "Overview" :
                   activeView === "contracts" ? "All Contracts" :
                   activeView === "risks" ? "Risk Alerts" :
                   activeView === "upload" ? "Upload Contract" :
                   "Settings"}
               </h2>
               <p className="text-sm text-[var(--text-muted)]">
-                {selectedContract ? selectedContract.contract_id :
-                  activeView === "dashboard" ? "Contract risk analysis overview" :
+                {activeView === "dashboard" ? "Contract risk analysis overview" :
                   activeView === "contracts" ? `${contracts.length} contracts analyzed` :
                   activeView === "risks" ? `${summary?.by_risk_level.red || 0} high-risk contracts requiring attention` :
                   activeView === "upload" ? "Analyze new contract documents" :
@@ -184,19 +182,7 @@ export default function Dashboard() {
         {/* Content Area */}
         <main className="p-8">
           <AnimatePresence mode="wait">
-            {selectedContract ? (
-              <motion.div
-                key="detail"
-                initial={{ opacity: 0, y: 10 }}
-                animate={{ opacity: 1, y: 0 }}
-                exit={{ opacity: 0, y: -10 }}
-              >
-                <ContractDetail
-                  contract={selectedContract}
-                  onBack={() => setSelectedContract(null)}
-                />
-              </motion.div>
-            ) : activeView === "upload" ? (
+            {activeView === "upload" ? (
               <motion.div
                 key="upload"
                 initial={{ opacity: 0, y: 10 }}
@@ -304,6 +290,12 @@ export default function Dashboard() {
           </AnimatePresence>
         </main>
       </div>
+
+      {/* Detail Panel */}
+      <DetailPanel
+        contract={selectedContract}
+        onClose={() => setSelectedContract(null)}
+      />
 
       {/* Toast Notification */}
       <AnimatePresence>
