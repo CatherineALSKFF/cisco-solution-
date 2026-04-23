@@ -9,6 +9,7 @@ import { DashboardCards } from "@/components/DashboardCards";
 import { ContractsTable } from "@/components/ContractsTable";
 import { DetailPanel } from "@/components/DetailPanel";
 import { UploadZone } from "@/components/UploadZone";
+import { ReportsView } from "@/components/ReportsView";
 
 export default function Dashboard() {
   const [summary, setSummary] = useState<ContractSummary | null>(null);
@@ -143,6 +144,7 @@ export default function Dashboard() {
                activeView === "contracts" ? "Contracts" :
                activeView === "renewals" ? "Renewals" :
                activeView === "upload" ? "Upload" :
+               activeView === "reports" ? "Reports" :
                "Dashboard"}
             </span>
           </div>
@@ -163,15 +165,17 @@ export default function Dashboard() {
         </header>
 
         {/* Content */}
-        <main className="flex-1 p-8 overflow-auto">
+        <main className="flex-1 overflow-auto">
           {activeView === "upload" ? (
-            <div className="max-w-2xl">
+            <div className="max-w-2xl p-8">
               <h1 className="text-2xl font-semibold text-[var(--text-primary)] mb-1 tracking-tight">Upload Contract</h1>
               <p className="text-[var(--text-muted)] mb-8">Analyze new contract documents</p>
               <UploadZone onUpload={handleUpload} isUploading={isUploading} uploadProgress={uploadProgress} />
             </div>
+          ) : activeView === "reports" && summary ? (
+            <ReportsView summary={summary} contracts={contracts} />
           ) : (
-            <>
+            <div className="p-8">
               {/* Header */}
               <div className="mb-8">
                 <h1 className="text-2xl font-semibold text-[var(--text-primary)] mb-1.5 tracking-tight">Contract Intelligence</h1>
@@ -289,7 +293,7 @@ export default function Dashboard() {
                   onFilterChange={setFilterLevel}
                 />
               </div>
-            </>
+            </div>
           )}
         </main>
       </div>

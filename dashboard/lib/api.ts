@@ -12,9 +12,10 @@ export async function fetchSummary(): Promise<ContractSummary> {
 
 export async function fetchContracts(riskLevel?: RiskLevel): Promise<Contract[]> {
   const params = new URLSearchParams();
+  params.set("limit", "500");
   if (riskLevel) params.set("risk_level", riskLevel);
 
-  const url = `${API_BASE}/contracts${params.toString() ? `?${params}` : ""}`;
+  const url = `${API_BASE}/contracts?${params}`;
   const res = await fetch(url, { cache: "no-store" });
   if (!res.ok) throw new Error("Failed to fetch contracts");
   return res.json();
