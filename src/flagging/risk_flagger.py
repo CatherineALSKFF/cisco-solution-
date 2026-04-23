@@ -16,12 +16,14 @@ class RiskFlagger:
     def __init__(self):
         self.expiry_warning_days = 90
         self.expiry_critical_days = 30
+        self.stale_contract_years = 5
 
     def generate_flags(
         self,
         clauses: ClauseExtraction,
         comparisons: list[ClauseComparison],
         expiry_date: Optional[date] = None,
+        effective_date: Optional[date] = None,
     ) -> tuple[list[RiskFlag], RiskLevel]:
         """Generate all risk flags and determine overall risk level."""
         flags = []
@@ -30,6 +32,7 @@ class RiskFlagger:
         flags.extend(self._check_royalty_risks(clauses))
         flags.extend(self._check_renewal_risks(clauses, expiry_date))
         flags.extend(self._check_comparison_risks(comparisons))
+        flags.extend(self._check_stale_contract(clauses, effective_date))
 
         overall_level = self._calculate_overall_risk(flags)
 
@@ -271,6 +274,47 @@ class RiskFlagger:
                     description=f"{comp.clause_type.title()} clause partially meets standards (score: {comp.similarity_score:.0%}).",
                     recommendation=f"Strengthen: {', '.join(comp.gaps[:2])}",
                 ))
+
+        return flags
+
+    def _check_stale_contract(
+        self,
+        clauses: ClauseExtraction,
+        effective_date: Optional[date] = None,
+    ) -> list[RiskFlag]:
+        """Check for stale contracts that need review (older than 5 years)."""
+        flags = []
+
+        check_date = effective_date or clauses.renewal.effective_date
+        if not check_date:
+            return flags
+
+        years_old = (date.today() - check_date).days / 365.25
+
+        if years_old >= 10:
+            flags.append(RiskFlag(
+                level=RiskLevel.RED,
+                category="stale",
+                title="Legacy Contract Requires Immediate Review",
+                description=f"Contract is {int(years_old)} years old (effective {check_date}). Security standards, compliance requirements, and market terms have significantly evolved.",
+                recommendation="URGENT: Schedule contract modernization review. Update security provisions to current PSIRT standards, renegotiate commercial terms, and validate vendor compliance.",
+            ))
+        elif years_old >= 7:
+            flags.append(RiskFlag(
+                level=RiskLevel.RED,
+                category="stale",
+                title="Outdated Contract Needs Modernization",
+                description=f"Contract is {int(years_old)} years old (effective {check_date}). Many security and compliance requirements have changed since execution.",
+                recommendation="Initiate contract refresh process. Prioritize security clause updates and PSIRT policy alignment.",
+            ))
+        elif years_old >= self.stale_contract_years:
+            flags.append(RiskFlag(
+                level=RiskLevel.YELLOW,
+                category="stale",
+                title="Stale Contract Requiring Review",
+                description=f"Contract is {int(years_old)} years old (effective {check_date}). May not reflect current security standards or market terms.",
+                recommendation="Schedule periodic review to assess alignment with current Cisco security and commercial standards.",
+            ))
 
         return flags
 

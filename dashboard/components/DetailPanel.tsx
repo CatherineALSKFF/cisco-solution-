@@ -31,6 +31,34 @@ const recommendationDetails: Record<string, { explanation: string; action: strin
     explanation: "Contract references compliance certifications (SOC 2, ISO 27001, etc.) that may have expired or need renewal verification.",
     action: "Request current certification documentation from vendor and set calendar reminder for annual re-verification.",
   },
+  "Schedule periodic review to assess alignment with current Cisco security and commercial standards.": {
+    explanation: "Contracts older than 5 years may not reflect current security requirements, compliance standards, or market-competitive terms. Industry security standards have evolved significantly.",
+    action: "Add this contract to the quarterly review queue. Compare current terms against the latest Cisco Security Standards Checklist and commercial benchmarks.",
+  },
+  "Initiate contract refresh process. Prioritize security clause updates and PSIRT policy alignment.": {
+    explanation: "This contract predates several major security policy updates. Critical PSIRT requirements (vulnerability disclosure, incident notification timelines, SBOM requirements) may be missing entirely.",
+    action: "Schedule vendor meeting to negotiate updated security exhibit. Use the 2024 Cisco Security Addendum template. Target completion within 90 days.",
+  },
+  "URGENT: Schedule contract modernization review. Update security provisions to current PSIRT standards, renegotiate commercial terms, and validate vendor compliance.": {
+    explanation: "Legacy contracts over 10 years old pose significant risk. Security landscape has fundamentally changed - zero-trust architecture, supply chain security (SolarWinds), ransomware threats all emerged after this contract was executed.",
+    action: "Escalate to Legal Ops leadership. Consider whether to renew/renegotiate or transition to alternative vendor with modern contract terms. Full security audit of vendor required.",
+  },
+  "CRITICAL: Add clause prohibiting backdoors per Cisco PSIRT policy.": {
+    explanation: "Per Cisco Security Vulnerability Policy, all vendor software must be free of backdoors, undocumented access mechanisms, or covert channels. This is a zero-tolerance requirement.",
+    action: "Add explicit prohibition clause: 'Vendor warrants that the Software contains no backdoors, undocumented administrative access, hardcoded credentials, or covert communication channels.'",
+  },
+  "CRITICAL: Add clause prohibiting hardcoded credentials per Cisco PSIRT policy.": {
+    explanation: "Hardcoded credentials are a critical security vulnerability (CWE-798). They cannot be changed by customers and represent a persistent attack vector.",
+    action: "Require vendor attestation that no hardcoded credentials exist. Add clause requiring credential rotation capabilities and prohibiting default passwords.",
+  },
+  "CRITICAL: Add 24-72 hour incident notification requirement per Cisco PSIRT policy.": {
+    explanation: "Timely notification of security incidents is essential for Cisco's incident response. Without this requirement, Cisco may not learn of breaches affecting its supply chain.",
+    action: "Add clause: 'Vendor shall notify Cisco within 24 hours of discovering any security incident affecting Cisco data or systems, and within 72 hours for incidents affecting vendor systems used in Cisco deliverables.'",
+  },
+  "CRITICAL: Add vulnerability disclosure requirements per Cisco PSIRT policy.": {
+    explanation: "ISO/IEC 29147:2018 defines vulnerability disclosure processes. Without this, vendors may delay or avoid disclosing vulnerabilities that could affect Cisco products.",
+    action: "Require vendor to maintain a documented vulnerability disclosure program and provide Cisco with advance notice (90 days minimum) before public disclosure of vulnerabilities in licensed software.",
+  },
 };
 
 interface DetailPanelProps {

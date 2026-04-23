@@ -76,7 +76,8 @@ class ContractPipeline:
         flags, overall_risk = self.flagger.generate_flags(
             clauses,
             comparisons,
-            metadata.get("expiry_date"),
+            expiry_date=metadata.get("expiry_date"),
+            effective_date=metadata.get("effective_date"),
         )
 
         cid = contract_id or f"CONTRACT-{uuid.uuid4().hex[:8].upper()}"
@@ -166,6 +167,7 @@ class ContractPipeline:
             "royalty": {"red": 0, "yellow": 0},
             "renewal": {"red": 0, "yellow": 0},
             "compliance": {"red": 0, "yellow": 0},
+            "stale": {"red": 0, "yellow": 0},
         }
 
         for contract in contracts:
