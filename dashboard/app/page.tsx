@@ -5,11 +5,10 @@ import { motion, AnimatePresence } from "framer-motion";
 import { Contract, ContractSummary, RiskLevel } from "@/lib/types";
 import { fetchContracts, fetchSummary, uploadContract } from "@/lib/api";
 import { Sidebar } from "@/components/Sidebar";
-import { SummaryBar } from "@/components/SummaryBar";
+import { DashboardCards } from "@/components/DashboardCards";
 import { ContractsTable } from "@/components/ContractsTable";
 import { DetailPanel } from "@/components/DetailPanel";
 import { UploadZone } from "@/components/UploadZone";
-import { RiskChart } from "@/components/RiskChart";
 
 export default function Dashboard() {
   const [summary, setSummary] = useState<ContractSummary | null>(null);
@@ -85,25 +84,17 @@ export default function Dashboard() {
     setSelectedContract(null);
     if (view === "risks") {
       setFilterLevel("red");
-    } else if (view === "contracts" || view === "dashboard") {
+    } else {
       setFilterLevel("all");
     }
   };
 
-  const handleContractSelect = (contract: Contract) => {
-    setSelectedContract(contract);
-  };
-
   if (loading) {
     return (
-      <div className="min-h-screen flex items-center justify-center bg-[var(--bg-surface)]">
-        <motion.div
-          initial={{ opacity: 0 }}
-          animate={{ opacity: 1 }}
-          className="flex flex-col items-center gap-4"
-        >
-          <div className="w-10 h-10 border-2 border-[var(--border)] border-t-[var(--text-primary)] rounded-full animate-spin" />
-          <span className="text-sm text-[var(--text-muted)] font-medium">Loading CES...</span>
+      <div className="min-h-screen flex items-center justify-center bg-gray-50">
+        <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} className="flex flex-col items-center gap-4">
+          <div className="w-10 h-10 border-2 border-gray-200 border-t-gray-900 rounded-full animate-spin" />
+          <span className="text-sm text-gray-500">Loading...</span>
         </motion.div>
       </div>
     );
@@ -111,203 +102,229 @@ export default function Dashboard() {
 
   if (error) {
     return (
-      <div className="min-h-screen flex items-center justify-center bg-[var(--bg-surface)]">
-        <motion.div
-          initial={{ opacity: 0, y: 20 }}
-          animate={{ opacity: 1, y: 0 }}
-          className="text-center max-w-md bg-white p-8 rounded-2xl border border-[var(--border)] shadow-sm"
-        >
-          <div className="w-14 h-14 rounded-full bg-[var(--risk-high-bg)] flex items-center justify-center mx-auto mb-5">
-            <svg className="w-7 h-7 text-[var(--risk-high)]" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+      <div className="min-h-screen flex items-center justify-center bg-gray-50">
+        <div className="text-center max-w-md bg-white p-8 rounded-2xl border shadow-sm">
+          <div className="w-14 h-14 rounded-full bg-red-50 flex items-center justify-center mx-auto mb-5">
+            <svg className="w-7 h-7 text-red-500" fill="none" viewBox="0 0 24 24" stroke="currentColor">
               <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M12 9v3.75m-9.303 3.376c-.866 1.5.217 3.374 1.948 3.374h14.71c1.73 0 2.813-1.874 1.948-3.374L13.949 3.378c-.866-1.5-3.032-1.5-3.898 0L2.697 16.126zM12 15.75h.007v.008H12v-.008z" />
             </svg>
           </div>
-          <h2 className="text-lg font-semibold text-[var(--text-primary)] mb-2">Connection Error</h2>
-          <p className="text-sm text-[var(--text-muted)] mb-5">{error}</p>
-          <code className="inline-block px-4 py-2.5 bg-[var(--bg-surface)] border border-[var(--border)] rounded-lg text-sm font-mono text-[var(--text-secondary)]">
+          <h2 className="text-lg font-semibold text-gray-900 mb-2">Connection Error</h2>
+          <p className="text-sm text-gray-500 mb-5">{error}</p>
+          <code className="inline-block px-4 py-2.5 bg-gray-100 rounded-lg text-sm font-mono text-gray-700">
             python main.py
           </code>
-        </motion.div>
+        </div>
       </div>
     );
   }
 
+  const tabs = [
+    { id: "dashboard", label: "Dashboard" },
+    { id: "contracts", label: "Contracts" },
+    { id: "risks", label: "Risk Center" },
+    { id: "renewals", label: "Renewals" },
+    { id: "vendors", label: "Vendors" },
+    { id: "reports", label: "Reports" },
+  ];
+
   return (
-    <div className="min-h-screen bg-[var(--bg-surface)] flex">
-      {/* Sidebar */}
+    <div className="min-h-screen bg-[#fafafa] flex">
       <Sidebar
         activeView={activeView}
         onViewChange={handleViewChange}
         stats={{
           total: summary?.total_contracts || 0,
           high: summary?.by_risk_level.red || 0,
+          renewals: summary?.expiring_in_90_days || 0,
         }}
       />
 
-      {/* Main Content */}
-      <div className="flex-1 ml-60 min-h-screen">
-        {/* Top Bar */}
-        <header className="sticky top-0 z-20 bg-white/80 backdrop-blur-md border-b border-[var(--border)] px-8 py-4">
-          <div className="flex items-center justify-between">
-            <div>
-              <h2 className="text-lg font-semibold text-[var(--text-primary)]">
-                {activeView === "dashboard" ? "Overview" :
-                  activeView === "contracts" ? "All Contracts" :
-                  activeView === "risks" ? "Risk Alerts" :
-                  activeView === "upload" ? "Upload Contract" :
-                  "Settings"}
-              </h2>
-              <p className="text-sm text-[var(--text-muted)]">
-                {activeView === "dashboard" ? "Contract risk analysis overview" :
-                  activeView === "contracts" ? `${contracts.length} contracts analyzed` :
-                  activeView === "risks" ? `${summary?.by_risk_level.red || 0} high-risk contracts requiring attention` :
-                  activeView === "upload" ? "Analyze new contract documents" :
-                  "Configure CES settings"}
-              </p>
-            </div>
-            {!selectedContract && activeView !== "upload" && (
+      <div className="flex-1 ml-56 min-h-screen flex flex-col">
+        {/* Top Nav */}
+        <header className="h-12 bg-white border-b border-gray-200 px-6 flex items-center justify-between">
+          <div className="flex items-center gap-1">
+            <span className="text-sm text-gray-400">Cisco CDP</span>
+            <span className="text-gray-300 mx-2">›</span>
+            <span className="text-sm font-medium text-gray-900">Risk Center</span>
+          </div>
+          <nav className="flex items-center gap-1 absolute left-1/2 -translate-x-1/2">
+            {tabs.map((tab) => (
               <button
-                onClick={() => setActiveView("upload")}
-                className="flex items-center gap-2 px-4 py-2 bg-[var(--text-primary)] text-white text-sm font-medium rounded-lg hover:bg-[var(--text-secondary)] transition-all duration-200 shadow-sm"
+                key={tab.id}
+                onClick={() => handleViewChange(tab.id)}
+                className={`px-3 py-1.5 text-sm font-medium rounded transition-colors ${
+                  activeView === tab.id
+                    ? "text-gray-900 bg-gray-100"
+                    : "text-gray-500 hover:text-gray-700"
+                }`}
               >
-                <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
-                  <path strokeLinecap="round" strokeLinejoin="round" d="M12 4v16m8-8H4" />
-                </svg>
-                New Contract
+                {tab.label}
               </button>
-            )}
+            ))}
+          </nav>
+          <div className="flex items-center gap-4">
+            <div className="flex items-center gap-2 px-3 py-1.5 bg-gray-100 rounded-lg text-sm text-gray-500">
+              <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={1.5}>
+                <path strokeLinecap="round" strokeLinejoin="round" d="M21 21l-5.197-5.197m0 0A7.5 7.5 0 105.196 5.196a7.5 7.5 0 0010.607 10.607z" />
+              </svg>
+              <span>Search contracts, clauses...</span>
+              <kbd className="text-[10px] bg-white px-1.5 py-0.5 rounded border text-gray-400">⌘K</kbd>
+            </div>
+            <div className="flex items-center gap-1.5 text-sm">
+              <span className="w-2 h-2 rounded-full bg-emerald-500" />
+              <span className="text-gray-600">API Connected</span>
+            </div>
+            <button className="text-gray-400 hover:text-gray-600">
+              <svg className="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={1.5}>
+                <path strokeLinecap="round" strokeLinejoin="round" d="M14.857 17.082a23.848 23.848 0 005.454-1.31A8.967 8.967 0 0118 9.75v-.7V9A6 6 0 006 9v.75a8.967 8.967 0 01-2.312 6.022c1.733.64 3.56 1.085 5.455 1.31m5.714 0a24.255 24.255 0 01-5.714 0m5.714 0a3 3 0 11-5.714 0" />
+              </svg>
+            </button>
           </div>
         </header>
 
-        {/* Content Area */}
-        <main className="p-8">
-          <AnimatePresence mode="wait">
-            {activeView === "upload" ? (
-              <motion.div
-                key="upload"
-                initial={{ opacity: 0, y: 10 }}
-                animate={{ opacity: 1, y: 0 }}
-                exit={{ opacity: 0, y: -10 }}
-                className="max-w-2xl"
-              >
-                <UploadZone
-                  onUpload={handleUpload}
-                  isUploading={isUploading}
-                  uploadProgress={uploadProgress}
-                />
-                {contracts.length > 0 && (
-                  <div className="mt-8">
-                    <h4 className="text-sm font-semibold text-[var(--text-primary)] mb-4">
-                      Recently Analyzed
-                    </h4>
-                    <div className="space-y-2">
-                      {contracts.slice(0, 5).map((contract) => (
-                        <button
-                          key={contract.contract_id}
-                          onClick={() => {
-                            setSelectedContract(contract);
-                          }}
-                          className="w-full flex items-center justify-between p-4 bg-white rounded-xl border border-[var(--border)] hover:border-[var(--border-strong)] hover:shadow-sm transition-all duration-200 text-left group"
-                        >
-                          <div className="flex items-center gap-4">
-                            <div className={`w-1 h-10 rounded-full ${
-                              contract.overall_risk_level === "red" ? "bg-[var(--risk-high)]" :
-                              contract.overall_risk_level === "yellow" ? "bg-[var(--risk-medium)]" :
-                              "bg-[var(--risk-low)]"
-                            }`} />
-                            <div>
-                              <p className="text-sm font-medium text-[var(--text-primary)] group-hover:text-[var(--accent)] transition-colors">
-                                {contract.vendor_name || "Unknown Vendor"}
-                              </p>
-                              <p className="text-xs text-[var(--text-muted)]">
-                                {contract.contract_type}
-                              </p>
-                            </div>
-                          </div>
-                          <svg className="w-4 h-4 text-[var(--text-muted)] group-hover:text-[var(--text-primary)] transition-colors" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={1.5}>
-                            <path strokeLinecap="round" strokeLinejoin="round" d="M8.25 4.5l7.5 7.5-7.5 7.5" />
-                          </svg>
-                        </button>
-                      ))}
-                    </div>
-                  </div>
-                )}
-              </motion.div>
-            ) : activeView === "settings" ? (
-              <motion.div
-                key="settings"
-                initial={{ opacity: 0, y: 10 }}
-                animate={{ opacity: 1, y: 0 }}
-                exit={{ opacity: 0, y: -10 }}
-                className="max-w-2xl space-y-6"
-              >
-                <div className="bg-white p-6 rounded-xl border border-[var(--border)]">
-                  <h4 className="text-sm font-semibold text-[var(--text-primary)] mb-1">API Status</h4>
-                  <p className="text-xs text-[var(--text-muted)] mb-4">Backend connection</p>
-                  <div className="flex items-center gap-2">
-                    <span className="w-2.5 h-2.5 rounded-full bg-[var(--risk-low)] animate-pulse" />
-                    <span className="text-sm font-medium text-[var(--text-primary)]">Connected</span>
-                  </div>
-                </div>
-                <div className="bg-white p-6 rounded-xl border border-[var(--border)]">
-                  <h4 className="text-sm font-semibold text-[var(--text-primary)] mb-1">Analysis Standards</h4>
-                  <p className="text-xs text-[var(--text-muted)] mb-4">Security policy configuration</p>
-                  <div className="text-sm text-[var(--text-secondary)] font-mono bg-[var(--bg-surface)] p-3 rounded-lg border border-[var(--border)]">
-                    Cisco PSIRT Security Vulnerability Policy
-                  </div>
-                </div>
-              </motion.div>
-            ) : (
-              <motion.div
-                key="main"
-                initial={{ opacity: 0, y: 10 }}
-                animate={{ opacity: 1, y: 0 }}
-                exit={{ opacity: 0, y: -10 }}
-                className="space-y-6"
-              >
-                {/* Stats + Chart Row */}
-                {summary && activeView === "dashboard" && (
-                  <div className="grid grid-cols-3 gap-6">
-                    <div className="col-span-2">
-                      <SummaryBar summary={summary} />
-                    </div>
-                    <RiskChart summary={summary} />
-                  </div>
-                )}
+        {/* Content */}
+        <main className="flex-1 p-6 overflow-auto">
+          {activeView === "upload" ? (
+            <div className="max-w-2xl">
+              <h1 className="text-2xl font-semibold text-gray-900 mb-1">Upload Contract</h1>
+              <p className="text-gray-500 mb-6">Analyze new contract documents</p>
+              <UploadZone onUpload={handleUpload} isUploading={isUploading} uploadProgress={uploadProgress} />
+            </div>
+          ) : (
+            <>
+              {/* Header */}
+              <div className="mb-6">
+                <h1 className="text-2xl font-semibold text-gray-900 mb-1">Contract Intelligence</h1>
+                <p className="text-gray-500">Cisco CDP Analysis Dashboard</p>
+              </div>
 
-                {/* Contracts Table */}
-                <div className="bg-white rounded-xl border border-[var(--border)] overflow-hidden">
-                  <ContractsTable
-                    contracts={contracts}
-                    onSelect={handleContractSelect}
-                    selectedId={undefined}
-                    filterLevel={filterLevel}
-                    onFilterChange={setFilterLevel}
-                  />
+              {/* Dashboard Cards */}
+              {summary && <DashboardCards summary={summary} contracts={contracts} />}
+
+              {/* Stats Row */}
+              {summary && (
+                <div className="flex items-center gap-6 py-4 mb-4 border-y border-gray-200">
+                  <div className="flex items-baseline gap-2">
+                    <span className="text-2xl font-semibold text-gray-900">{summary.total_contracts}</span>
+                    <span className="text-[11px] text-gray-400 uppercase tracking-wider">Total Contracts</span>
+                  </div>
+                  <div className="w-px h-6 bg-gray-200" />
+                  <div className="flex items-baseline gap-2">
+                    <span className="text-2xl font-semibold text-red-500">{summary.by_risk_level.red}</span>
+                    <span className="text-[11px] text-gray-400 uppercase tracking-wider">High Risk</span>
+                  </div>
+                  <div className="w-px h-6 bg-gray-200" />
+                  <div className="flex items-baseline gap-2">
+                    <span className="text-2xl font-semibold text-amber-500">{summary.by_risk_level.yellow}</span>
+                    <span className="text-[11px] text-gray-400 uppercase tracking-wider">Medium Risk</span>
+                  </div>
+                  <div className="w-px h-6 bg-gray-200" />
+                  <div className="flex items-baseline gap-2">
+                    <span className="text-2xl font-semibold text-emerald-500">{summary.by_risk_level.green}</span>
+                    <span className="text-[11px] text-gray-400 uppercase tracking-wider">Low Risk</span>
+                  </div>
+                  <div className="w-px h-6 bg-gray-200" />
+                  <div className="flex items-baseline gap-2">
+                    <span className="text-2xl font-semibold text-gray-900">{summary.expiring_in_90_days}</span>
+                    <span className="text-[11px] text-gray-400 uppercase tracking-wider">Expiring in 90D</span>
+                  </div>
                 </div>
-              </motion.div>
-            )}
-          </AnimatePresence>
+              )}
+
+              {/* Filter + Actions */}
+              <div className="flex items-center justify-between mb-4">
+                <div className="flex items-center gap-1 p-1 bg-gray-100 rounded-lg">
+                  {[
+                    { value: "all", label: "All", count: contracts.length },
+                    { value: "red", label: "High Risk", count: summary?.by_risk_level.red || 0 },
+                    { value: "yellow", label: "Medium", count: summary?.by_risk_level.yellow || 0 },
+                    { value: "green", label: "Low", count: summary?.by_risk_level.green || 0 },
+                  ].map((f) => (
+                    <button
+                      key={f.value}
+                      onClick={() => setFilterLevel(f.value as RiskLevel | "all")}
+                      className={`px-3 py-1.5 text-sm font-medium rounded-md transition-all ${
+                        filterLevel === f.value
+                          ? "bg-white text-gray-900 shadow-sm"
+                          : "text-gray-500 hover:text-gray-700"
+                      }`}
+                    >
+                      {f.label} <span className="text-gray-400 ml-1">{f.count}</span>
+                    </button>
+                  ))}
+                </div>
+
+                <div className="flex items-center gap-2">
+                  <div className="flex items-center gap-1 p-1 bg-gray-100 rounded-lg">
+                    <button className="px-3 py-1.5 text-sm font-medium bg-white text-gray-900 rounded-md shadow-sm">
+                      <span className="flex items-center gap-1.5">
+                        <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={1.5}>
+                          <path strokeLinecap="round" strokeLinejoin="round" d="M3.375 19.5h17.25m-17.25 0a1.125 1.125 0 01-1.125-1.125M3.375 19.5h7.5c.621 0 1.125-.504 1.125-1.125m-9.75 0V5.625m0 12.75v-1.5c0-.621.504-1.125 1.125-1.125m18.375 2.625V5.625m0 12.75c0 .621-.504 1.125-1.125 1.125m1.125-1.125v-1.5c0-.621-.504-1.125-1.125-1.125m0 3.75h-7.5A1.125 1.125 0 0112 18.375m9.75-12.75c0-.621-.504-1.125-1.125-1.125H3.375c-.621 0-1.125.504-1.125 1.125m19.5 0v1.5c0 .621-.504 1.125-1.125 1.125M2.25 5.625v1.5c0 .621.504 1.125 1.125 1.125m0 0h17.25m-17.25 0h7.5c.621 0 1.125.504 1.125 1.125M3.375 8.25c-.621 0-1.125.504-1.125 1.125v1.5c0 .621.504 1.125 1.125 1.125m17.25-3.75h-7.5c-.621 0-1.125.504-1.125 1.125m8.625-1.125c.621 0 1.125.504 1.125 1.125v1.5c0 .621-.504 1.125-1.125 1.125" />
+                        </svg>
+                        Table
+                      </span>
+                    </button>
+                    <button className="px-3 py-1.5 text-sm text-gray-500 rounded-md">Board</button>
+                    <button className="px-3 py-1.5 text-sm text-gray-500 rounded-md">Timeline</button>
+                  </div>
+
+                  <button className="px-3 py-1.5 text-sm text-gray-600 bg-white border border-gray-200 rounded-lg hover:bg-gray-50 flex items-center gap-1.5">
+                    <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={1.5}>
+                      <path strokeLinecap="round" strokeLinejoin="round" d="M10.5 6h9.75M10.5 6a1.5 1.5 0 11-3 0m3 0a1.5 1.5 0 10-3 0M3.75 6H7.5m3 12h9.75m-9.75 0a1.5 1.5 0 01-3 0m3 0a1.5 1.5 0 00-3 0m-3.75 0H7.5m9-6h3.75m-3.75 0a1.5 1.5 0 01-3 0m3 0a1.5 1.5 0 00-3 0m-9.75 0h9.75" />
+                    </svg>
+                    Filters
+                  </button>
+
+                  <button className="px-3 py-1.5 text-sm text-gray-600 bg-white border border-gray-200 rounded-lg hover:bg-gray-50">
+                    Sort: Risk
+                  </button>
+
+                  <button className="px-3 py-1.5 text-sm text-gray-600 bg-white border border-gray-200 rounded-lg hover:bg-gray-50">
+                    Compare
+                  </button>
+
+                  <button className="px-3 py-1.5 text-sm text-gray-600 bg-white border border-gray-200 rounded-lg hover:bg-gray-50">
+                    CSV
+                  </button>
+
+                  <button
+                    onClick={() => handleViewChange("upload")}
+                    className="px-4 py-1.5 text-sm font-medium text-white bg-gray-900 rounded-lg hover:bg-gray-800 flex items-center gap-1.5"
+                  >
+                    <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
+                      <path strokeLinecap="round" strokeLinejoin="round" d="M3 16.5v2.25A2.25 2.25 0 005.25 21h13.5A2.25 2.25 0 0021 18.75V16.5m-13.5-9L12 3m0 0l4.5 4.5M12 3v13.5" />
+                    </svg>
+                    Upload
+                  </button>
+                </div>
+              </div>
+
+              {/* Table */}
+              <div className="bg-white rounded-xl border border-gray-200 overflow-hidden">
+                <ContractsTable
+                  contracts={contracts}
+                  onSelect={setSelectedContract}
+                  selectedId={undefined}
+                  filterLevel={filterLevel}
+                  onFilterChange={setFilterLevel}
+                />
+              </div>
+            </>
+          )}
         </main>
       </div>
 
-      {/* Detail Panel */}
-      <DetailPanel
-        contract={selectedContract}
-        onClose={() => setSelectedContract(null)}
-      />
+      <DetailPanel contract={selectedContract} onClose={() => setSelectedContract(null)} />
 
-      {/* Toast Notification */}
       <AnimatePresence>
         {toast && (
           <motion.div
-            initial={{ opacity: 0, y: 50, scale: 0.9 }}
-            animate={{ opacity: 1, y: 0, scale: 1 }}
-            exit={{ opacity: 0, y: 20, scale: 0.9 }}
-            className={`fixed bottom-6 left-1/2 -translate-x-1/2 ml-30 px-5 py-3 rounded-xl shadow-lg flex items-center gap-3 ${
-              toast.type === "success"
-                ? "bg-[var(--risk-low)] text-white"
-                : "bg-[var(--risk-high)] text-white"
+            initial={{ opacity: 0, y: 50 }}
+            animate={{ opacity: 1, y: 0 }}
+            exit={{ opacity: 0, y: 20 }}
+            className={`fixed bottom-6 left-1/2 -translate-x-1/2 ml-28 px-5 py-3 rounded-xl shadow-lg flex items-center gap-3 ${
+              toast.type === "success" ? "bg-emerald-500 text-white" : "bg-red-500 text-white"
             }`}
           >
             {toast.type === "success" ? (
