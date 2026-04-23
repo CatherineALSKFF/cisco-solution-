@@ -27,3 +27,20 @@ export async function fetchContract(id: string): Promise<Contract> {
   if (!res.ok) throw new Error("Failed to fetch contract");
   return res.json();
 }
+
+export async function uploadContract(file: File): Promise<Contract> {
+  const formData = new FormData();
+  formData.append("file", file);
+
+  const res = await fetch(`${API_BASE}/contracts/analyze`, {
+    method: "POST",
+    body: formData,
+  });
+
+  if (!res.ok) {
+    const error = await res.text();
+    throw new Error(error || "Failed to analyze contract");
+  }
+
+  return res.json();
+}

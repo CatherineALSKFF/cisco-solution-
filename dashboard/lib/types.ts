@@ -33,7 +33,14 @@ export interface SecurityClause {
   has_audit_rights: boolean;
   has_compliance_certifications: boolean;
   has_data_protection: boolean;
+  has_vulnerability_disclosure?: boolean;
+  prohibits_backdoors?: boolean;
+  prohibits_hardcoded_credentials?: boolean;
+  has_secure_development?: boolean;
+  has_third_party_component_tracking?: boolean;
+  has_security_updates_commitment?: boolean;
   gaps: string[];
+  critical_gaps?: string[];
   extracted_text?: string;
 }
 

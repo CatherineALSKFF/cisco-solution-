@@ -94,7 +94,7 @@ export function DetailPanel({ contract, onClose }: DetailPanelProps) {
                         className="p-3 rounded-lg bg-[var(--bg-base)] border border-[var(--border-subtle)]"
                       >
                         <div className="flex items-center gap-2 mb-1">
-                          <RiskBadge level={flag.level} size="sm" />
+                          <RiskBadge level={flag.level} />
                           <span className="text-xs text-[var(--text-muted)] uppercase">
                             {flag.category}
                           </span>

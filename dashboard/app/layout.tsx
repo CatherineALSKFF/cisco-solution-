@@ -13,8 +13,11 @@ const jetbrainsMono = JetBrains_Mono({
 });
 
 export const metadata: Metadata = {
-  title: "Contract Intelligence | Cisco CDP",
-  description: "AI-powered contract analysis dashboard",
+  title: "CES | Contract Evaluation System",
+  description: "AI-powered contract risk analysis for Cisco CDP",
+  icons: {
+    icon: "/favicon.svg",
+  },
 };
 
 export default function RootLayout({
