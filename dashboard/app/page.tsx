@@ -120,7 +120,7 @@ export default function Dashboard() {
   }
 
   return (
-    <div className="min-h-screen bg-[#fafafa] flex">
+    <div className="min-h-screen bg-[var(--bg-base)] flex">
       <Sidebar
         activeView={activeView}
         onViewChange={handleViewChange}
@@ -133,11 +133,11 @@ export default function Dashboard() {
 
       <div className="flex-1 ml-56 min-h-screen flex flex-col">
         {/* Top Nav */}
-        <header className="h-12 bg-white border-b border-gray-200 px-6 flex items-center justify-between">
-          <div className="flex items-center gap-1">
-            <span className="text-sm text-gray-400">Cisco CDP</span>
-            <span className="text-gray-300 mx-2">›</span>
-            <span className="text-sm font-medium text-gray-900">
+        <header className="h-14 bg-[var(--bg-surface)] border-b border-[var(--border)] px-6 flex items-center justify-between shadow-[var(--shadow-xs)]">
+          <div className="flex items-center gap-2">
+            <span className="text-sm text-[var(--text-muted)]">Cisco CDP</span>
+            <span className="text-[var(--text-faint)]">›</span>
+            <span className="text-sm font-medium text-[var(--text-primary)]">
               {activeView === "dashboard" ? "Dashboard" :
                activeView === "risks" ? "Risk Center" :
                activeView === "contracts" ? "Contracts" :
@@ -147,18 +147,14 @@ export default function Dashboard() {
             </span>
           </div>
           <div className="flex items-center gap-4">
-            <div className="flex items-center gap-2 px-3 py-1.5 bg-gray-100 rounded-lg text-sm text-gray-500">
-              <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={1.5}>
+            <div className="flex items-center gap-2.5 px-3.5 py-2 bg-[var(--bg-elevated)] rounded-xl text-sm text-[var(--text-muted)] hover:bg-[var(--bg-hover)] transition-colors cursor-pointer">
+              <svg className="w-4 h-4 text-[var(--text-faint)]" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={1.5}>
                 <path strokeLinecap="round" strokeLinejoin="round" d="M21 21l-5.197-5.197m0 0A7.5 7.5 0 105.196 5.196a7.5 7.5 0 0010.607 10.607z" />
               </svg>
               <span>Search contracts, clauses...</span>
-              <kbd className="text-[10px] bg-white px-1.5 py-0.5 rounded border text-gray-400">⌘K</kbd>
+              <kbd className="text-[10px] bg-[var(--bg-surface)] px-1.5 py-0.5 rounded-md border border-[var(--border)] text-[var(--text-faint)] font-mono">⌘K</kbd>
             </div>
-            <div className="flex items-center gap-1.5 text-sm">
-              <span className="w-2 h-2 rounded-full bg-emerald-500" />
-              <span className="text-gray-600">API Connected</span>
-            </div>
-            <button className="text-gray-400 hover:text-gray-600">
+            <button className="p-2 rounded-xl text-[var(--text-muted)] hover:bg-[var(--bg-elevated)] hover:text-[var(--text-secondary)] transition-all">
               <svg className="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={1.5}>
                 <path strokeLinecap="round" strokeLinejoin="round" d="M14.857 17.082a23.848 23.848 0 005.454-1.31A8.967 8.967 0 0118 9.75v-.7V9A6 6 0 006 9v.75a8.967 8.967 0 01-2.312 6.022c1.733.64 3.56 1.085 5.455 1.31m5.714 0a24.255 24.255 0 01-5.714 0m5.714 0a3 3 0 11-5.714 0" />
               </svg>
@@ -167,19 +163,19 @@ export default function Dashboard() {
         </header>
 
         {/* Content */}
-        <main className="flex-1 p-6 overflow-auto">
+        <main className="flex-1 p-8 overflow-auto">
           {activeView === "upload" ? (
             <div className="max-w-2xl">
-              <h1 className="text-2xl font-semibold text-gray-900 mb-1">Upload Contract</h1>
-              <p className="text-gray-500 mb-6">Analyze new contract documents</p>
+              <h1 className="text-2xl font-semibold text-[var(--text-primary)] mb-1 tracking-tight">Upload Contract</h1>
+              <p className="text-[var(--text-muted)] mb-8">Analyze new contract documents</p>
               <UploadZone onUpload={handleUpload} isUploading={isUploading} uploadProgress={uploadProgress} />
             </div>
           ) : (
             <>
               {/* Header */}
-              <div className="mb-6">
-                <h1 className="text-2xl font-semibold text-gray-900 mb-1">Contract Intelligence</h1>
-                <p className="text-gray-500">Cisco CDP Analysis Dashboard</p>
+              <div className="mb-8">
+                <h1 className="text-2xl font-semibold text-[var(--text-primary)] mb-1.5 tracking-tight">Contract Intelligence</h1>
+                <p className="text-[var(--text-muted)]">Cisco CDP Analysis Dashboard</p>
               </div>
 
               {/* Dashboard Cards */}
@@ -187,37 +183,37 @@ export default function Dashboard() {
 
               {/* Stats Row */}
               {summary && (
-                <div className="flex items-center gap-6 py-4 mb-4 border-y border-gray-200">
+                <div className="flex items-center gap-8 py-5 mb-6 border-y border-[var(--border)]">
                   <div className="flex items-baseline gap-2">
-                    <span className="text-2xl font-semibold text-gray-900">{summary.total_contracts}</span>
-                    <span className="text-[11px] text-gray-400 uppercase tracking-wider">Total Contracts</span>
+                    <span className="text-2xl font-semibold text-[var(--text-primary)] tracking-tight">{summary.total_contracts}</span>
+                    <span className="text-[11px] text-[var(--text-muted)] uppercase tracking-wider font-medium">Total Contracts</span>
                   </div>
-                  <div className="w-px h-6 bg-gray-200" />
+                  <div className="w-px h-6 bg-[var(--border)]" />
                   <div className="flex items-baseline gap-2">
-                    <span className="text-2xl font-semibold text-red-500">{summary.by_risk_level.red}</span>
-                    <span className="text-[11px] text-gray-400 uppercase tracking-wider">High Risk</span>
+                    <span className="text-2xl font-semibold text-[var(--risk-high)] tracking-tight">{summary.by_risk_level.red}</span>
+                    <span className="text-[11px] text-[var(--text-muted)] uppercase tracking-wider font-medium">High Risk</span>
                   </div>
-                  <div className="w-px h-6 bg-gray-200" />
+                  <div className="w-px h-6 bg-[var(--border)]" />
                   <div className="flex items-baseline gap-2">
-                    <span className="text-2xl font-semibold text-amber-500">{summary.by_risk_level.yellow}</span>
-                    <span className="text-[11px] text-gray-400 uppercase tracking-wider">Medium Risk</span>
+                    <span className="text-2xl font-semibold text-[var(--risk-medium)] tracking-tight">{summary.by_risk_level.yellow}</span>
+                    <span className="text-[11px] text-[var(--text-muted)] uppercase tracking-wider font-medium">Medium Risk</span>
                   </div>
-                  <div className="w-px h-6 bg-gray-200" />
+                  <div className="w-px h-6 bg-[var(--border)]" />
                   <div className="flex items-baseline gap-2">
-                    <span className="text-2xl font-semibold text-emerald-500">{summary.by_risk_level.green}</span>
-                    <span className="text-[11px] text-gray-400 uppercase tracking-wider">Low Risk</span>
+                    <span className="text-2xl font-semibold text-[var(--risk-low)] tracking-tight">{summary.by_risk_level.green}</span>
+                    <span className="text-[11px] text-[var(--text-muted)] uppercase tracking-wider font-medium">Low Risk</span>
                   </div>
-                  <div className="w-px h-6 bg-gray-200" />
+                  <div className="w-px h-6 bg-[var(--border)]" />
                   <div className="flex items-baseline gap-2">
-                    <span className="text-2xl font-semibold text-gray-900">{summary.expiring_in_90_days}</span>
-                    <span className="text-[11px] text-gray-400 uppercase tracking-wider">Expiring in 90D</span>
+                    <span className="text-2xl font-semibold text-[var(--text-primary)] tracking-tight">{summary.expiring_in_90_days}</span>
+                    <span className="text-[11px] text-[var(--text-muted)] uppercase tracking-wider font-medium">Expiring in 90D</span>
                   </div>
                 </div>
               )}
 
               {/* Filter + Actions */}
-              <div className="flex items-center justify-between mb-4">
-                <div className="flex items-center gap-1 p-1 bg-gray-100 rounded-lg">
+              <div className="flex items-center justify-between mb-5">
+                <div className="flex items-center gap-1 p-1 bg-[var(--bg-elevated)] rounded-xl">
                   {[
                     { value: "all", label: "All", count: contracts.length },
                     { value: "red", label: "High Risk", count: summary?.by_risk_level.red || 0 },
@@ -227,20 +223,20 @@ export default function Dashboard() {
                     <button
                       key={f.value}
                       onClick={() => setFilterLevel(f.value as RiskLevel | "all")}
-                      className={`px-3 py-1.5 text-sm font-medium rounded-md transition-all ${
+                      className={`px-3.5 py-2 text-sm font-medium rounded-lg transition-all ${
                         filterLevel === f.value
-                          ? "bg-white text-gray-900 shadow-sm"
-                          : "text-gray-500 hover:text-gray-700"
+                          ? "bg-[var(--bg-surface)] text-[var(--text-primary)] shadow-[var(--shadow-sm)]"
+                          : "text-[var(--text-muted)] hover:text-[var(--text-secondary)]"
                       }`}
                     >
-                      {f.label} <span className="text-gray-400 ml-1">{f.count}</span>
+                      {f.label} <span className="text-[var(--text-faint)] ml-1">{f.count}</span>
                     </button>
                   ))}
                 </div>
 
-                <div className="flex items-center gap-2">
-                  <div className="flex items-center gap-1 p-1 bg-gray-100 rounded-lg">
-                    <button className="px-3 py-1.5 text-sm font-medium bg-white text-gray-900 rounded-md shadow-sm">
+                <div className="flex items-center gap-2.5">
+                  <div className="flex items-center gap-1 p-1 bg-[var(--bg-elevated)] rounded-xl">
+                    <button className="px-3.5 py-2 text-sm font-medium bg-[var(--bg-surface)] text-[var(--text-primary)] rounded-lg shadow-[var(--shadow-sm)]">
                       <span className="flex items-center gap-1.5">
                         <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={1.5}>
                           <path strokeLinecap="round" strokeLinejoin="round" d="M3.375 19.5h17.25m-17.25 0a1.125 1.125 0 01-1.125-1.125M3.375 19.5h7.5c.621 0 1.125-.504 1.125-1.125m-9.75 0V5.625m0 12.75v-1.5c0-.621.504-1.125 1.125-1.125m18.375 2.625V5.625m0 12.75c0 .621-.504 1.125-1.125 1.125m1.125-1.125v-1.5c0-.621-.504-1.125-1.125-1.125m0 3.75h-7.5A1.125 1.125 0 0112 18.375m9.75-12.75c0-.621-.504-1.125-1.125-1.125H3.375c-.621 0-1.125.504-1.125 1.125m19.5 0v1.5c0 .621-.504 1.125-1.125 1.125M2.25 5.625v1.5c0 .621.504 1.125 1.125 1.125m0 0h17.25m-17.25 0h7.5c.621 0 1.125.504 1.125 1.125M3.375 8.25c-.621 0-1.125.504-1.125 1.125v1.5c0 .621.504 1.125 1.125 1.125m17.25-3.75h-7.5c-.621 0-1.125.504-1.125 1.125m8.625-1.125c.621 0 1.125.504 1.125 1.125v1.5c0 .621-.504 1.125-1.125 1.125" />
@@ -248,32 +244,32 @@ export default function Dashboard() {
                         Table
                       </span>
                     </button>
-                    <button className="px-3 py-1.5 text-sm text-gray-500 rounded-md">Board</button>
-                    <button className="px-3 py-1.5 text-sm text-gray-500 rounded-md">Timeline</button>
+                    <button className="px-3.5 py-2 text-sm text-[var(--text-muted)] hover:text-[var(--text-secondary)] rounded-lg transition-colors">Board</button>
+                    <button className="px-3.5 py-2 text-sm text-[var(--text-muted)] hover:text-[var(--text-secondary)] rounded-lg transition-colors">Timeline</button>
                   </div>
 
-                  <button className="px-3 py-1.5 text-sm text-gray-600 bg-white border border-gray-200 rounded-lg hover:bg-gray-50 flex items-center gap-1.5">
-                    <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={1.5}>
+                  <button className="px-3.5 py-2 text-sm text-[var(--text-secondary)] bg-[var(--bg-surface)] border border-[var(--border)] rounded-xl hover:bg-[var(--bg-hover)] hover:border-[var(--border-strong)] transition-all flex items-center gap-1.5 shadow-[var(--shadow-xs)]">
+                    <svg className="w-4 h-4 text-[var(--text-muted)]" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={1.5}>
                       <path strokeLinecap="round" strokeLinejoin="round" d="M10.5 6h9.75M10.5 6a1.5 1.5 0 11-3 0m3 0a1.5 1.5 0 10-3 0M3.75 6H7.5m3 12h9.75m-9.75 0a1.5 1.5 0 01-3 0m3 0a1.5 1.5 0 00-3 0m-3.75 0H7.5m9-6h3.75m-3.75 0a1.5 1.5 0 01-3 0m3 0a1.5 1.5 0 00-3 0m-9.75 0h9.75" />
                     </svg>
                     Filters
                   </button>
 
-                  <button className="px-3 py-1.5 text-sm text-gray-600 bg-white border border-gray-200 rounded-lg hover:bg-gray-50">
+                  <button className="px-3.5 py-2 text-sm text-[var(--text-secondary)] bg-[var(--bg-surface)] border border-[var(--border)] rounded-xl hover:bg-[var(--bg-hover)] hover:border-[var(--border-strong)] transition-all shadow-[var(--shadow-xs)]">
                     Sort: Risk
                   </button>
 
-                  <button className="px-3 py-1.5 text-sm text-gray-600 bg-white border border-gray-200 rounded-lg hover:bg-gray-50">
+                  <button className="px-3.5 py-2 text-sm text-[var(--text-secondary)] bg-[var(--bg-surface)] border border-[var(--border)] rounded-xl hover:bg-[var(--bg-hover)] hover:border-[var(--border-strong)] transition-all shadow-[var(--shadow-xs)]">
                     Compare
                   </button>
 
-                  <button className="px-3 py-1.5 text-sm text-gray-600 bg-white border border-gray-200 rounded-lg hover:bg-gray-50">
+                  <button className="px-3.5 py-2 text-sm text-[var(--text-secondary)] bg-[var(--bg-surface)] border border-[var(--border)] rounded-xl hover:bg-[var(--bg-hover)] hover:border-[var(--border-strong)] transition-all shadow-[var(--shadow-xs)]">
                     CSV
                   </button>
 
                   <button
                     onClick={() => handleViewChange("upload")}
-                    className="px-4 py-1.5 text-sm font-medium text-white bg-gray-900 rounded-lg hover:bg-gray-800 flex items-center gap-1.5"
+                    className="px-4 py-2 text-sm font-medium text-white bg-[var(--text-primary)] rounded-xl hover:bg-[var(--text-secondary)] transition-all shadow-[var(--shadow-sm)] flex items-center gap-1.5"
                   >
                     <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
                       <path strokeLinecap="round" strokeLinejoin="round" d="M3 16.5v2.25A2.25 2.25 0 005.25 21h13.5A2.25 2.25 0 0021 18.75V16.5m-13.5-9L12 3m0 0l4.5 4.5M12 3v13.5" />
@@ -284,7 +280,7 @@ export default function Dashboard() {
               </div>
 
               {/* Table */}
-              <div className="bg-white rounded-xl border border-gray-200 overflow-hidden">
+              <div className="bg-[var(--bg-surface)] rounded-2xl border border-[var(--border)] overflow-hidden shadow-[var(--shadow-sm)]">
                 <ContractsTable
                   contracts={contracts}
                   onSelect={setSelectedContract}
